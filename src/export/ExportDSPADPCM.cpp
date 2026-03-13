@@ -3235,7 +3235,7 @@ ProgressResult ExportDSPADPCM::ExportSTM(AudacityProject *project,
         }
 
         wxFileOffset offset = fs.Tell();
-        wxFileOffset offRem = ROUND_UP_32(offset) - offset;
+        wxFileOffset offRem = (0x20 - offset & 0x1f) - offset; //Fix by theKidOfArcrania
         for (int i=0 ; i<offRem ; ++i)
             fs.Write("", 1);
 
