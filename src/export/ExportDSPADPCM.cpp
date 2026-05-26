@@ -2063,24 +2063,23 @@ ProgressResult ExportDSPADPCM::ExportStandard(AudacityProject *project,
             }
 
             /* Resolve loop sample */
-            //Fix
             if (loops &&
                 !loopHistAdded[c][0] &&
-                samplescompleted[c] <= (int)loopStartSample &&
-                samplescompleted[c] + 14 > (int)loopStartSample)
+                writtenSamples <= loopStartSample &&
+                writtenSamples + 14 > loopStartSample)
             {
-                int local = (int)loopStartSample - (int)samplescompleted[c];
-            
+                int local = (int)loopStartSample - (int)writtenSamples;
+
                 loopHistAdded[c][0] = true;
                 loopHistAdded[c][1] = true;
-            
-                loopPs[c] = adpcmBlock[f][0];
-            
-                // convSamps[c][0] = older history sample
-                // convSamps[c][1] = previous history sample
-                // convSamps[c][2] = first real sample in this frame
-                loopHist[c][0] = convSamps[c][local + 1]; // sample before loop start
-                loopHist[c][1] = convSamps[c][local];     // two samples before loop start
+
+                loopPs[c] = block[0];
+
+                // convSamps[0] = older history sample
+                // convSamps[1] = previous history sample
+                // convSamps[2] = first real sample in this frame
+                loopHist[c][0] = convSamps[local + 1]; // sample before loop start
+                loopHist[c][1] = convSamps[local];     // two samples before loop start
             }
 
             convSamps[0] = convSamps[14];
