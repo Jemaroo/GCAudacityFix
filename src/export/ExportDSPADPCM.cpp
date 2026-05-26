@@ -3335,6 +3335,25 @@ ProgressResult ExportDSPADPCM::ExportSTM(AudacityProject *project,
         fs.Write(loopHist[1], 4);
     }
 
+    /*
+     * Some games appear to read slightly past the end of STM data when a loop
+     * wraps. Match the external workaround script by appending extra zero data
+     * and forcing the final file size away from a 64-byte boundary.
+     */
+    if (updateResult == ProgressResult::Success)
+    {
+        fs.SeekEnd();
+        wxFileOffset length = fs.Tell();
+        wxFileOffset mo = length % 32;
+        wxFileOffset diff = 32 - mo;
+
+        char eofPad[1056] = {};
+        fs.Write(eofPad, (size_t)(1024 + diff));
+
+        if (((length + diff) % 64) == 0)
+            fs.Write(eofPad, 32);
+    }
+
     return updateResult;
 }
 
