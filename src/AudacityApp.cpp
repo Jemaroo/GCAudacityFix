@@ -35,6 +35,7 @@ It handles initialization and termination by subclassing wxApp.
 #include <wx/window.h>
 #include <wx/intl.h>
 #include <wx/menu.h>
+#include <wx/msw/init.h>
 #include <wx/snglinst.h>
 #include <wx/splash.h>
 #include <wx/stdpaths.h>
@@ -2401,4 +2402,3 @@ void AudacityApp::AssociateFileTypes()
    }
 }
 #endif
-
