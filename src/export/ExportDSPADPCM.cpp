@@ -1918,37 +1918,26 @@ ProgressResult ExportDSPADPCM::ExportStandard(AudacityProject *project,
             if (!label->title.CmpNoCase(wxT("loop")))
             {
                 loops = true;
-                loopStartSample = label->getT0() * rate;
-                loopStartNibble = sampleidx_to_nibbleidx(label->getT0() * rate);
-                loopEndSample = label->getT1() * rate;
 
-                //Fix
-                if (!label->title.CmpNoCase(wxT("loop")))
-                {
-                    loops = true;
-                
-                    uint32_t startSample = (uint32_t)(label->getT0() * rate);
-                    uint32_t endSample = (uint32_t)(label->getT1() * rate);
-                
-                    if (startSample >= numSamples)
-                        startSample = numSamples - 1;
-                
-                    if (endSample > 0)
-                        endSample--;
-                
-                    if (endSample >= numSamples)
-                        endSample = numSamples - 1;
-                
-                    if (endSample < startSample)
-                        endSample = startSample;
-                
-                    loopStartSample = startSample;
-                    loopStartNibble = sampleidx_to_nibbleidx(startSample);
-                    loopEndSample = endSample;
-                    loopEndNibble = sampleidx_to_nibbleidx(endSample);
-                    break;
-                }
-              
+                uint32_t startSample = (uint32_t)(label->getT0() * rate);
+                uint32_t endSample = (uint32_t)(label->getT1() * rate);
+
+                if (startSample >= numSamples)
+                    startSample = numSamples - 1;
+
+                if (endSample > 0)
+                    endSample--;
+
+                if (endSample >= numSamples)
+                    endSample = numSamples - 1;
+
+                if (endSample < startSample)
+                    endSample = startSample;
+
+                loopStartSample = startSample;
+                loopStartNibble = sampleidx_to_nibbleidx(startSample);
+                loopEndSample = endSample;
+                loopEndNibble = sampleidx_to_nibbleidx(endSample);
                 break;
             }
         }
@@ -2080,7 +2069,7 @@ ProgressResult ExportDSPADPCM::ExportStandard(AudacityProject *project,
                 samplescompleted[c] <= (int)loopStartSample &&
                 samplescompleted[c] + 14 > (int)loopStartSample)
             {
-                int local = (int)loopStartSample - samplescompleted[c];
+                int local = (int)loopStartSample - (int)samplescompleted[c];
             
                 loopHistAdded[c][0] = true;
                 loopHistAdded[c][1] = true;
@@ -3140,33 +3129,28 @@ ProgressResult ExportDSPADPCM::ExportSTM(AudacityProject *project,
         for (int l=0 ; l<labelTrack->GetNumLabels() ; ++l)
         {
             const LabelStruct* label = labelTrack->GetLabel(l);
-
-            //Fix
             if (!label->title.CmpNoCase(wxT("loop")))
             {
                 loops = true;
-            
+
                 uint32_t startSample = (uint32_t)(label->getT0() * rate);
                 uint32_t endSample = (uint32_t)(label->getT1() * rate);
-            
+
                 if (startSample >= numSamples)
                     startSample = numSamples - 1;
-            
+
                 if (endSample > 0)
                     endSample--;
-            
+
                 if (endSample >= numSamples)
                     endSample = numSamples - 1;
-            
+
                 if (endSample < startSample)
                     endSample = startSample;
-            
+
                 loopStartSample = startSample;
                 loopStartNibble = sampleidx_to_nibbleidx(startSample);
                 loopEndNibble = sampleidx_to_nibbleidx(endSample);
-                break;
-            }
-              
                 break;
             }
         }
@@ -3270,7 +3254,7 @@ ProgressResult ExportDSPADPCM::ExportSTM(AudacityProject *project,
                     samplescompleted[c] <= (int)loopStartSample &&
                     samplescompleted[c] + 14 > (int)loopStartSample)
                 {
-                    int local = (int)loopStartSample - samplescompleted[c];
+                    int local = (int)loopStartSample - (int)samplescompleted[c];
                 
                     loopHistAdded[c][0] = true;
                     loopHistAdded[c][1] = true;
