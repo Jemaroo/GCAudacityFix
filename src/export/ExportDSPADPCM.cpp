@@ -1921,7 +1921,34 @@ ProgressResult ExportDSPADPCM::ExportStandard(AudacityProject *project,
                 loopStartSample = label->getT0() * rate;
                 loopStartNibble = sampleidx_to_nibbleidx(label->getT0() * rate);
                 loopEndSample = label->getT1() * rate;
-                loopEndNibble = sampleidx_to_nibbleidx(label->getT1() * rate);
+
+                //Fix
+                if (!label->title.CmpNoCase(wxT("loop")))
+                {
+                    loops = true;
+                
+                    uint32_t startSample = (uint32_t)(label->getT0() * rate);
+                    uint32_t endSample = (uint32_t)(label->getT1() * rate);
+                
+                    if (startSample >= numSamples)
+                        startSample = numSamples - 1;
+                
+                    if (endSample > 0)
+                        endSample--;
+                
+                    if (endSample >= numSamples)
+                        endSample = numSamples - 1;
+                
+                    if (endSample < startSample)
+                        endSample = startSample;
+                
+                    loopStartSample = startSample;
+                    loopStartNibble = sampleidx_to_nibbleidx(startSample);
+                    loopEndSample = endSample;
+                    loopEndNibble = sampleidx_to_nibbleidx(endSample);
+                    break;
+                }
+              
                 break;
             }
         }
@@ -3115,7 +3142,33 @@ ProgressResult ExportDSPADPCM::ExportSTM(AudacityProject *project,
                 loops = true;
                 loopStartSample = label->getT0() * sampleRate;
                 loopStartNibble = sampleidx_to_nibbleidx(label->getT0() * rate);
-                loopEndNibble = sampleidx_to_nibbleidx(label->getT1() * rate);
+
+                //Fix
+                if (!label->title.CmpNoCase(wxT("loop")))
+                {
+                    loops = true;
+                
+                    uint32_t startSample = (uint32_t)(label->getT0() * rate);
+                    uint32_t endSample = (uint32_t)(label->getT1() * rate);
+                
+                    if (startSample >= numSamples)
+                        startSample = numSamples - 1;
+                
+                    if (endSample > 0)
+                        endSample--;
+                
+                    if (endSample >= numSamples)
+                        endSample = numSamples - 1;
+                
+                    if (endSample < startSample)
+                        endSample = startSample;
+                
+                    loopStartSample = startSample;
+                    loopStartNibble = sampleidx_to_nibbleidx(startSample);
+                    loopEndNibble = sampleidx_to_nibbleidx(endSample);
+                    break;
+                }
+              
                 break;
             }
         }
@@ -3140,14 +3193,15 @@ ProgressResult ExportDSPADPCM::ExportSTM(AudacityProject *project,
     header.sampleRate = bswap16(sampleRate);
     header.numChannels = bswapu32(numChannels);
     header.adpcmData2Offset = bswapu32(chanStride);
-    header.adpcmLoopStartOffset = bswapu32((loopStartNibble / 2) & ~7);
+
+    //Fix
+    uint32_t loopStartByteOffset = loops ? ((loopStartNibble / 2) & ~7) : 0xffffffff;
+    header.adpcmLoopStartOffset = bswapu32(loopStartByteOffset);
     header.adpcmData2OffsetAux1 = header.adpcmData2Offset;
     header.adpcmData2OffsetAux2 = header.adpcmData2Offset;
-  
-    header.adpcmLoopOffsetAux1 = 0;
-    if (header.adpcmLoopStartOffset != 0xffffffff)
-        header.adpcmLoopOffsetAux1 = header.adpcmLoopStartOffset;
+    header.adpcmLoopOffsetAux1 = bswapu32(loops ? loopStartByteOffset : 0);
     header.adpcmLoopOffsetAux2 = header.adpcmLoopOffsetAux1;
+  
     fs.Write(&header, sizeof(header));
 
     /* Write channel headers */
@@ -3211,21 +3265,26 @@ ProgressResult ExportDSPADPCM::ExportSTM(AudacityProject *project,
                     ps[c] = adpcmBlock[f][0];
                 }
 
-                /* Resolve loop sample */
-                if (!loopHistAdded[c][0] &&
-                    samplescompleted[c] <= loopStartSample - 1 &&
-                    samplescompleted[c] + 14 > loopStartSample - 1)
+                /* Resolve loop state */
+                //Fix
+                if (loops &&
+                    !loopHistAdded[c][0] &&
+                    samplescompleted[c] <= (int)loopStartSample &&
+                    samplescompleted[c] + 14 > (int)loopStartSample)
                 {
+                    int local = (int)loopStartSample - samplescompleted[c];
+                
                     loopHistAdded[c][0] = true;
-                    loopHist[c][0] = convSamps[c][loopStartSample-samplescompleted[c]-1];
-                    loopPs[c] = adpcmBlock[f][0];
-                }
-                if (!loopHistAdded[c][1] &&
-                    samplescompleted[c] <= loopStartSample - 2 &&
-                    samplescompleted[c] + 14 > loopStartSample - 2)
-                {
                     loopHistAdded[c][1] = true;
-                    loopHist[c][1] = convSamps[c][loopStartSample-samplescompleted[c]-2];
+                
+                    // Predictor/scale byte of the ADPCM frame containing the loop start
+                    loopPs[c] = adpcmBlock[f][0];
+                
+                    // convSamps[c][0] = older history sample
+                    // convSamps[c][1] = previous history sample
+                    // convSamps[c][2] = first real sample in this frame
+                    loopHist[c][0] = convSamps[c][local + 1]; // sample before loop start
+                    loopHist[c][1] = convSamps[c][local];     // two samples before loop start
                 }
 
                 convSamps[c][0] = convSamps[c][14];
