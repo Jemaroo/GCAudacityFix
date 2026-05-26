@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -338,17 +338,19 @@
     <ClCompile Include="..\..\..\src\effects\Wahwah.cpp" />
     <ClCompile Include="..\..\..\src\effects\VST\VSTEffect.cpp" />
     <ClCompile Include="..\..\..\src\export\Export.cpp" />
-    <ClCompile Include="..\..\..\src\export\ExportCL.cpp" />
-    <ClCompile Include="..\..\..\src\export\ExportFFmpeg.cpp" />
-    <ClCompile Include="..\..\..\src\export\ExportFFmpegDialogs.cpp" />
-    <ClCompile Include="..\..\..\src\export\ExportFLAC.cpp" />
-    <ClCompile Include="..\..\..\src\export\ExportMP2.cpp" />
-    <ClCompile Include="..\..\..\src\export\ExportMP3.cpp" />
-    <ClCompile Include="..\..\..\src\export\ExportMultiple.cpp" />
-    <ClCompile Include="..\..\..\src\export\ExportOGG.cpp" />
-    <ClCompile Include="..\..\..\src\export\ExportPCM.cpp" />
-    <ClCompile Include="..\..\..\src\import\Import.cpp" />
-    <ClCompile Include="..\..\..\src\import\ImportFFmpeg.cpp" />
+	<ClCompile Include="..\..\..\src\export\ExportCL.cpp" />
+	<ClCompile Include="..\..\..\src\export\ExportDSPADPCM.cpp" />
+	<ClCompile Include="..\..\..\src\export\ExportFFmpeg.cpp" />
+	<ClCompile Include="..\..\..\src\export\ExportFFmpegDialogs.cpp" />
+	<ClCompile Include="..\..\..\src\export\ExportFLAC.cpp" />
+	<ClCompile Include="..\..\..\src\export\ExportMP2.cpp" />
+	<ClCompile Include="..\..\..\src\export\ExportMP3.cpp" />
+	<ClCompile Include="..\..\..\src\export\ExportMultiple.cpp" />
+	<ClCompile Include="..\..\..\src\export\ExportOGG.cpp" />
+	<ClCompile Include="..\..\..\src\export\ExportPCM.cpp" />
+	<ClCompile Include="..\..\..\src\import\Import.cpp" />
+	<ClCompile Include="..\..\..\src\import\ImportDSPADPCM.cpp" />
+	<ClCompile Include="..\..\..\src\import\ImportFFmpeg.cpp" />
     <ClCompile Include="..\..\..\src\import\ImportFLAC.cpp" />
     <ClCompile Include="..\..\..\src\import\ImportLOF.cpp" />
     <ClCompile Include="..\..\..\src\import\ImportMIDI.cpp" />
