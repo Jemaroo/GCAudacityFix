@@ -3147,6 +3147,13 @@ ProgressResult ExportDSPADPCM::ExportSTM(AudacityProject *project,
                 if (endSample < startSample)
                     endSample = startSample;
 
+                // STM loop starts need to be 0x20-byte aligned.
+                // 0x20 bytes = 4 ADPCM frames = 56 samples.
+                startSample = (startSample / 56) * 56;
+
+                if (endSample < startSample)
+                    endSample = startSample;
+
                 loopStartSample = startSample;
                 loopStartNibble = sampleidx_to_nibbleidx(startSample);
                 loopEndNibble = sampleidx_to_nibbleidx(endSample);
@@ -3176,7 +3183,7 @@ ProgressResult ExportDSPADPCM::ExportSTM(AudacityProject *project,
     header.adpcmData2Offset = bswapu32(chanStride);
 
     //Fix
-    uint32_t loopStartByteOffset = loops ? ((loopStartNibble / 2) & ~7) : 0xffffffff;
+    uint32_t loopStartByteOffset = loops ? ((loopStartNibble / 2) & ~0x1f) : 0xffffffff;
     header.adpcmLoopStartOffset = bswapu32(loopStartByteOffset);
     header.adpcmData2OffsetAux1 = header.adpcmData2Offset;
     header.adpcmData2OffsetAux2 = header.adpcmData2Offset;
