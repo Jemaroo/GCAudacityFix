@@ -3138,11 +3138,11 @@ ProgressResult ExportDSPADPCM::ExportSTM(AudacityProject *project,
                 if (startSample >= numSamples)
                     startSample = numSamples - 1;
 
-                if (endSample > 0)
-                    endSample--;
-
-                if (endSample >= numSamples)
-                    endSample = numSamples - 1;
+                // Treat Audacity label end time as an exclusive/end-boundary sample.
+                // Do not subtract one; the original STM files store loop_end as
+                // the end boundary, e.g. num_nibbles + 2 for a full-song loop.
+                if (endSample > numSamples)
+                    endSample = numSamples;
 
                 if (endSample < startSample)
                     endSample = startSample;
@@ -3156,7 +3156,11 @@ ProgressResult ExportDSPADPCM::ExportSTM(AudacityProject *project,
 
                 loopStartSample = startSample;
                 loopStartNibble = sampleidx_to_nibbleidx(startSample);
-                loopEndNibble = sampleidx_to_nibbleidx(endSample);
+
+                if (endSample >= numSamples)
+                    loopEndNibble = chanFrames * 16 + 2;
+                else
+                    loopEndNibble = sampleidx_to_nibbleidx(endSample);
                 break;
             }
         }
@@ -3188,6 +3192,7 @@ ProgressResult ExportDSPADPCM::ExportSTM(AudacityProject *project,
     header.adpcmData2OffsetAux1 = header.adpcmData2Offset;
     header.adpcmData2OffsetAux2 = header.adpcmData2Offset;
     header.adpcmLoopOffsetAux1 = bswapu32(loops ? loopStartByteOffset : 0);
+    // Original STM files mirror the loop byte offset here, not adpcmData2Offset.
     header.adpcmLoopOffsetAux2 = header.adpcmLoopOffsetAux1;
   
     fs.Write(&header, sizeof(header));
@@ -3199,6 +3204,7 @@ ProgressResult ExportDSPADPCM::ExportSTM(AudacityProject *project,
         chanheader.num_samples = bswapu32(numSamples);
         chanheader.num_nibbles = bswapu32(chanFrames * 16);
         chanheader.sample_rate = bswapu32(sampleRate);
+        chanheader.ca = bswapu32(2);
         chanheader.loop_flag = bswap16((uint16_t)loops);
         if (loops)
         {
