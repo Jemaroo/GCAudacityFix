@@ -2074,21 +2074,24 @@ ProgressResult ExportDSPADPCM::ExportStandard(AudacityProject *project,
             }
 
             /* Resolve loop sample */
-            if (!loopHistAdded[c][0] &&
-                writtenSamples <= loopStartSample - 1 &&
-                writtenSamples + 14 > loopStartSample - 1)
+            //Fix
+            if (loops &&
+                !loopHistAdded[c][0] &&
+                samplescompleted[c] <= (int)loopStartSample &&
+                samplescompleted[c] + 14 > (int)loopStartSample)
             {
+                int local = (int)loopStartSample - samplescompleted[c];
+            
                 loopHistAdded[c][0] = true;
-                loopHist[c][0] = convSamps[loopStartSample-writtenSamples-1];
-                loopPs[c] = block[0];
-            }
-            if (!loopHistAdded[c][1] &&
-                writtenSamples <= loopStartSample - 2 &&
-                writtenSamples + 14 > loopStartSample - 2)
-            {
                 loopHistAdded[c][1] = true;
-                loopHist[c][1] = convSamps[loopStartSample-writtenSamples-2];
-                loopPs[c] = block[0];
+            
+                loopPs[c] = adpcmBlock[f][0];
+            
+                // convSamps[c][0] = older history sample
+                // convSamps[c][1] = previous history sample
+                // convSamps[c][2] = first real sample in this frame
+                loopHist[c][0] = convSamps[c][local + 1]; // sample before loop start
+                loopHist[c][1] = convSamps[c][local];     // two samples before loop start
             }
 
             convSamps[0] = convSamps[14];
@@ -3137,37 +3140,32 @@ ProgressResult ExportDSPADPCM::ExportSTM(AudacityProject *project,
         for (int l=0 ; l<labelTrack->GetNumLabels() ; ++l)
         {
             const LabelStruct* label = labelTrack->GetLabel(l);
+
+            //Fix
             if (!label->title.CmpNoCase(wxT("loop")))
             {
                 loops = true;
-                loopStartSample = label->getT0() * sampleRate;
-                loopStartNibble = sampleidx_to_nibbleidx(label->getT0() * rate);
-
-                //Fix
-                if (!label->title.CmpNoCase(wxT("loop")))
-                {
-                    loops = true;
-                
-                    uint32_t startSample = (uint32_t)(label->getT0() * rate);
-                    uint32_t endSample = (uint32_t)(label->getT1() * rate);
-                
-                    if (startSample >= numSamples)
-                        startSample = numSamples - 1;
-                
-                    if (endSample > 0)
-                        endSample--;
-                
-                    if (endSample >= numSamples)
-                        endSample = numSamples - 1;
-                
-                    if (endSample < startSample)
-                        endSample = startSample;
-                
-                    loopStartSample = startSample;
-                    loopStartNibble = sampleidx_to_nibbleidx(startSample);
-                    loopEndNibble = sampleidx_to_nibbleidx(endSample);
-                    break;
-                }
+            
+                uint32_t startSample = (uint32_t)(label->getT0() * rate);
+                uint32_t endSample = (uint32_t)(label->getT1() * rate);
+            
+                if (startSample >= numSamples)
+                    startSample = numSamples - 1;
+            
+                if (endSample > 0)
+                    endSample--;
+            
+                if (endSample >= numSamples)
+                    endSample = numSamples - 1;
+            
+                if (endSample < startSample)
+                    endSample = startSample;
+            
+                loopStartSample = startSample;
+                loopStartNibble = sampleidx_to_nibbleidx(startSample);
+                loopEndNibble = sampleidx_to_nibbleidx(endSample);
+                break;
+            }
               
                 break;
             }
