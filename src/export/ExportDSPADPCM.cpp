@@ -3132,14 +3132,18 @@ ProgressResult ExportDSPADPCM::ExportSTM(AudacityProject *project,
     }
 
     /* Write header */
+    //Fix
     struct stm_header header = {};
+    uint32_t chanDataSize = chanFrames * 8;
+    uint32_t chanStride = ROUND_UP_32(chanDataSize);
     header.field00 = bswap16(512);
     header.sampleRate = bswap16(sampleRate);
     header.numChannels = bswapu32(numChannels);
-    header.adpcmData2Offset = bswapu32(chanFrames * 8);
+    header.adpcmData2Offset = bswapu32(chanStride);
     header.adpcmLoopStartOffset = bswapu32((loopStartNibble / 2) & ~7);
     header.adpcmData2OffsetAux1 = header.adpcmData2Offset;
     header.adpcmData2OffsetAux2 = header.adpcmData2Offset;
+  
     header.adpcmLoopOffsetAux1 = 0;
     if (header.adpcmLoopStartOffset != 0xffffffff)
         header.adpcmLoopOffsetAux1 = header.adpcmLoopStartOffset;
@@ -3234,9 +3238,10 @@ ProgressResult ExportDSPADPCM::ExportSTM(AudacityProject *project,
                 break;
         }
 
+        //Fix
         wxFileOffset offset = fs.Tell();
-        wxFileOffset offRem = (0x20 - offset & 0x1f) - offset; //Fix by theKidOfArcrania
-        for (int i=0 ; i<offRem ; ++i)
+        wxFileOffset offRem = (0x20 - (offset & 0x1f)) & 0x1f;
+        for (wxFileOffset i = 0; i < offRem; ++i)
             fs.Write("", 1);
 
         if (updateResult != ProgressResult::Success)
