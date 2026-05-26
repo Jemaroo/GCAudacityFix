@@ -41,6 +41,10 @@
 #include <wx/thread.h>
 #include <wx/tooltip.h>
 
+#ifdef __WXMSW__
+#include <wx/msw/init.h>
+#endif
+
 #include "audacity/Types.h"
 
 #include "AColor.h"
